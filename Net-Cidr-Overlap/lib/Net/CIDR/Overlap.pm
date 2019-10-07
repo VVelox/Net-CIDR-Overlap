@@ -20,7 +20,7 @@ our $VERSION = '0.0.1';
 
 =head1 SYNOPSIS
 
-
+    my $nco=Net::CIDR::Overlap->new;
 
 =head1 METHODS
 
@@ -32,17 +32,164 @@ No arguments are taken.
 
 This will always succeeed.
 
-      my $nco=N
+      my $nco=Net::CIDR::Overlap->new;
 
 =cut
 
 sub new{
 	my $self={
 			  set=>Net::CIDR::Set->new,
+			  list=>[],
 			  };
 	bless $self;
 
 	return $self;
+}
+
+=head2 add
+
+This adds a subnet to the set being checked.
+
+Net::CIDR::cidrvalidate is used to validate passed CIDR/IP.
+
+This will die if it is called with a undef value of if validation fails.
+
+This does not check if what is being added overlaps with anything already
+added.
+
+    eval{
+        $nco->add( $cidr );
+    }
+    if ( $@ ){
+        warn( $@ );
+    }
+
+=cut
+
+sub add{
+	my $self=$_[0];
+	my $cidr=$_[1];
+
+	if (!defined( $cidr )){
+		die('No CIDR defined');
+	}
+
+	my $valid;
+	eval{
+		 $valid=Net::CIDR::cidrvalidate($cidr);
+	 };
+	if (! defined( $valid ) ){
+		die $cidr.' is not a valid CIDR or IP';
+	}
+
+	$self->{set}->add($cidr);
+
+	push( @{ $self->{list} }, $cidr );
+
+	return 1;
+}
+
+=head2 compare_and_add
+
+This first checks for overlap and then adds it.
+
+There is one required argument and two optional.
+
+The first and required is the CIDR/IP. This will be
+validated using Net::CIDR::cidrvalidate.
+
+The second is if to invert the check or not. If set to
+true, it will only be added if overlap is found.
+
+The third is if overlap should be any or all. This is boolean
+and a value of true sets it to all. The default value is false,
+meaning any overlap.
+
+    # just add it if there is no overlap
+    eval{
+        $nco->compare_and_add( $cidr );
+    }
+    if ( $@ ){
+        warn( $@ );
+    }
+
+    # this time invert it and use use any for the overlap check
+    eval{
+        $nco->add( $cidr, '1', '0' );
+    }
+    if ( $@ ){
+        warn( $@ );
+    }
+
+=cut
+
+sub compare_and_add{
+	my $self=$_[0];
+	my $cidr=$_[1];
+	my $invert=$_[2];
+	my $all=$_[3];
+
+	if (!defined( $cidr )){
+		die('No CIDR defined');
+	}
+
+	# set here so we produce nice output if we die
+	if ( !defined( $invert ) ){
+		$invert=0;
+	}
+	if ( !defined( $all ) ){
+		$all=0;
+	}
+	my $valid;
+	eval{
+		 $valid=Net::CIDR::cidrvalidate($cidr);
+	 };
+	if (! defined( $valid ) ){
+		die $cidr.' is not a valid CIDR or IP';
+	}
+
+	my $contains=0;
+	if (
+		$all &&
+		$self->{set}->contains_all( $cidr )
+		){
+		$contains=1;
+	}elsif(
+		   ( ! $all ) &&
+		   $self->{set}->contains_any( $cidr )
+		   ){
+		$contains=1;
+	}
+
+	if ( $invert ){
+		$contains = $contains ^ 1;
+	}
+
+	if( $contains ){
+		die( 'The compare matched... invert='.$invert.' all='.$all );
+	}
+
+	$self->{set}->add($cidr);
+	push( @{ $self->{list} }, $cidr );
+
+	return 1;
+}
+
+=head2 list
+
+This returns a array ref of successfully added items.
+
+    my $list=$nco->list;
+    foreach my $cidr ( @${ $list } ){
+        print $cidr."\n";
+    }
+
+=cut
+
+sub list{
+	my $self=$_[0];
+
+	return $self->{list};
 }
 
 =head1 AUTHOR
