@@ -18,9 +18,6 @@ eval{
 };
 ok( $worked eq '1', 'init') or diag("Net::CIDR::Overlap->new died with ".$@);
 
-use Data::Dumper;
-diag "\n".Dumper( $nco )."\n";
-
 $worked=0;
 eval{
 	$nco->add('a');
