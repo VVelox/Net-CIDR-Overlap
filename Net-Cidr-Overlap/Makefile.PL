@@ -4,10 +4,10 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
-    NAME             => 'Net::Cidr::Overlap',
+    NAME             => 'Net::CIDR::Overlap',
     AUTHOR           => q{Zane C. Bowers-Hadley <vvelox@vvelox.net>},
-    VERSION_FROM     => 'lib/Net/Cidr/Overlap.pm',
-    ABSTRACT_FROM    => 'lib/Net/Cidr/Overlap.pm',
+    VERSION_FROM     => 'lib/Net/CIDR/Overlap.pm',
+    ABSTRACT_FROM    => 'lib/Net/CIDR/Overlap.pm',
     LICENSE          => 'artistic_2',
     MIN_PERL_VERSION => '5.006',
     CONFIGURE_REQUIRES => {
@@ -17,11 +17,11 @@ my %WriteMakefileArgs = (
         'Test::More' => '0',
     },
     PREREQ_PM => {
-        #'ABC'              => '1.6',
-        #'Foo::Bar::Module' => '5.0401',
+				  'Net::CIDR'=>'0.20',
+				  'Net::CIDR::Set'=>'0.13',
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES => 'Net-Cidr-Overlap-*' },
+    clean => { FILES => 'Net-CIDR-Overlap-*' },
 );
 
 # Compatibility with old versions of ExtUtils::MakeMaker

@@ -1,4 +1,4 @@
-Net-Cidr-Overlap
+Net-CIDR-Overlap
 
 The README is used to introduce the module and provide instructions on
 how to install the module, any machine dependencies it may have (for
@@ -26,21 +26,21 @@ SUPPORT AND DOCUMENTATION
 After installing, you can find documentation for this module with the
 perldoc command.
 
-    perldoc Net::Cidr::Overlap
+    perldoc Net::CIDR::Overlap
 
 You can also look for information at:
 
     RT, CPAN's request tracker (report bugs here)
-        https://rt.cpan.org/NoAuth/Bugs.html?Dist=Net-Cidr-Overlap
+        https://rt.cpan.org/NoAuth/Bugs.html?Dist=Net-CIDR-Overlap
 
     AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/Net-Cidr-Overlap
+        http://annocpan.org/dist/Net-CIDR-Overlap
 
     CPAN Ratings
-        https://cpanratings.perl.org/d/Net-Cidr-Overlap
+        https://cpanratings.perl.org/d/Net-CIDR-Overlap
 
     Search CPAN
-        https://metacpan.org/release/Net-Cidr-Overlap
+        https://metacpan.org/release/Net-CIDR-Overlap
 
 
 LICENSE AND COPYRIGHT
