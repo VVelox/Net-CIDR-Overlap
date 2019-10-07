@@ -37,10 +37,10 @@ This will always succeeed.
 =cut
 
 sub new{
-	my $self={
-			  set=>Net::CIDR::Set->new,
-			  list=>[],
-			  };
+	my $self = {
+				set=>Net::CIDR::Set->new,
+				list=>[],
+				};
 	bless $self;
 
 	return $self;
@@ -82,7 +82,7 @@ sub add{
 		die $cidr.' is not a valid CIDR or IP';
 	}
 
-	$self->{set}->add($cidr);
+	$self->{set}->add( $cidr );
 
 	push( @{ $self->{list} }, $cidr );
 
