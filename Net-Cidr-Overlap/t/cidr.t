@@ -23,21 +23,21 @@ diag "\n".Dumper( $nco )."\n";
 
 $worked=0;
 eval{
-	Net::CIDR::Overlap->add('a');
+	$nco->add('a');
 	$worked=1;
 };
 ok( $worked eq '0', 'bad CIDR 1') or diag("'a' was accepted as a CIDR");
 
 $worked=0;
 eval{
-	Net::CIDR::Overlap->add('127.0.0.1/24');
+	$nco->add('127.0.0.1/24');
 	$worked=1;
 };
 ok( $worked eq '0', 'bad CIDR 2') or diag("'127.0.0.1/24' was accepted as a CIDR");
 
 $worked=0;
 eval{
-	Net::CIDR::Overlap->add('127.0.0.0/24');
+	$nco->add('127.0.0.0/24');
 	$worked=1;
 };
 ok( $worked eq '1', 'good CIDR') or diag("'127.0.0.0/24' was not accepted as a CIDR... $@=".$@);
