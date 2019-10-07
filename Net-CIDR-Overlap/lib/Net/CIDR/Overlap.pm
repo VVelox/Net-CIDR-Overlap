@@ -8,7 +8,7 @@ use Net::CIDR::Set;
 
 =head1 NAME
 
-Net::CIDR::Overlap - The great new Net::CIDR::Overlap!
+Net::CIDR::Overlap - A utility module for helping make sure a list of CIDRs don't overlap.
 
 =head1 VERSION
 
@@ -21,6 +21,39 @@ our $VERSION = '0.0.1';
 =head1 SYNOPSIS
 
     my $nco=Net::CIDR::Overlap->new;
+    
+    # add some subnets
+    eval{
+        $nco->add( '127.0.0.0/24' );
+        $nco->add( '192.168.42.0/24' );
+        $nco->add( '10.10.0.0/16' );
+    }
+    if ( $@ ){
+        warn( $@ );
+    }
+    
+    # this will fail as they have already been added
+    eval{
+        $nco->add( '127.0.0.0/25' );
+        $nco->add( '10.10.10/24' );
+    }
+    if ( $@ ){
+        warn( $@ );
+    }
+    
+    # this will fail this is not a valid CIDR
+    eval{
+        $nco->add( 'foo' );
+    }
+    if ( $@ ){
+        warn( $@ );
+    }
+    
+    # print the subnets we added with out issue
+    my $list=$nco->list;
+    foreach my $cidr ( @${ $list } ){
+        print $cidr."\n";
+    }
 
 =head1 METHODS
 
@@ -32,7 +65,7 @@ No arguments are taken.
 
 This will always succeeed.
 
-      my $nco=Net::CIDR::Overlap->new;
+    my $nco=Net::CIDR::Overlap->new;
 
 =cut
 
