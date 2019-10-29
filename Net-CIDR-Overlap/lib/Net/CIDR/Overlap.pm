@@ -61,15 +61,29 @@ our $VERSION = '0.0.1';
 
 This initates the object.
 
-No arguments are taken.
+One argument is taken and that is a 4 or 6, depending on if you are working with IPv4 or IPv6.
+If it is left undefined, IPv4 is used.
 
 This will always succeeed.
 
-    my $nco=Net::CIDR::Overlap->new;
+    my $nco=Net::CIDR::Overlap->new(4);
 
 =cut
 
 sub new{
+	my $type=$_[1];
+
+	my $set;
+	if ( ! defined( $type ) ){
+		$set=Net::CIDR::Set->new( { type => 'ipv4' } );
+	}elsif( $type =~ /4/ ){
+		$set=Net::CIDR::Set->new( { type => 'ipv4' } );
+	}elsif( $type =~ /6/ ){
+		$set=Net::CIDR::Set->new( { type => 'ipv6' } );
+	}else{
+		die ('"'.$type.'" is not 4 or 6' );
+	}
+
 	my $self = {
 				set=>Net::CIDR::Set->new( { type => 'ipv4' } ),
 				list=>[],
