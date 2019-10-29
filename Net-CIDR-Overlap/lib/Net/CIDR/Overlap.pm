@@ -71,7 +71,7 @@ This will always succeeed.
 
 sub new{
 	my $self = {
-				set=>Net::CIDR::Set->new,
+				set=>Net::CIDR::Set->new( { type => 'ipv4' } ),
 				list=>[],
 				};
 	bless $self;
@@ -179,6 +179,12 @@ sub compare_and_add{
 	 };
 	if (! defined( $valid ) ){
 		die $cidr.' is not a valid CIDR or IP';
+	}
+
+	if ( ! defined( $self->{list}[0] ) ){
+		$self->{set}->add($cidr);
+		push( @{ $self->{list} }, $cidr );
+		return 1;
 	}
 
 	my $contains=0;
