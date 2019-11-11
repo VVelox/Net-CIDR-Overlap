@@ -55,6 +55,9 @@ our $VERSION = '0.2.0';
         print $cidr."\n";
     }
 
+This works with eithe IPv4 or IPv6. Two instances of L<Net::CIDR::Set>
+are maintained, one for IPv4 and one for IPv6.
+
 =head1 METHODS
 
 =head2 new
@@ -457,6 +460,10 @@ L<https://cpanratings.perl.org/d/Net-CIDR-Overlap>
 =item * Search CPAN
 
 L<https://metacpan.org/release/Net-CIDR-Overlap>
+
+=item * GIT Repository
+
+L<https://github.com/VVelox/Net-CIDR-Overlap>
 
 =back
 
