@@ -12,11 +12,11 @@ Net::CIDR::Overlap - A utility module for helping make sure a list of CIDRs don'
 
 =head1 VERSION
 
-Version 0.1.0
+Version 0.2.0
 
 =cut
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.2.0';
 
 =head1 SYNOPSIS
 
@@ -61,33 +61,17 @@ our $VERSION = '0.1.0';
 
 This initates the object.
 
-One argument is taken and that is a 4 or 6, depending on if you are working with IPv4 or IPv6.
-If it is left undefined, IPv4 is used.
-
-This will always succeeed, provided a valid value is used for the type.
-
-    my $nco=Net::CIDR::Overlap->new(4);
+    my $nco=Net::CIDR::Overlap->new;
 
 =cut
 
 sub new{
-	my $type=$_[1];
-
-	my $set;
-	if ( ! defined( $type ) ){
-		$set=Net::CIDR::Set->new( { type => 'ipv4' } );
-	}elsif( $type =~ /4/ ){
-		$set=Net::CIDR::Set->new( { type => 'ipv4' } );
-	}elsif( $type =~ /6/ ){
-		$set=Net::CIDR::Set->new( { type => 'ipv6' } );
-	}else{
-		die ('"'.$type.'" is not 4 or 6' );
-	}
-
 	my $self = {
-				set=>$set,
+				set4=>Net::CIDR::Set->new( { type => 'ipv4' } ),
+				set6=>Net::CIDR::Set->new( { type => 'ipv6' } ),
 				list=>{},
-				init=>undef,
+				set4init=>undef,
+				set6init=>undef,
 				};
 	bless $self;
 
@@ -118,19 +102,10 @@ sub add{
 	my $self=$_[0];
 	my $cidr=$_[1];
 
-	if (!defined( $cidr )){
-		die('No CIDR defined');
-	}
+	# makes sure we have a defined+valid valueand get what set we should remove it from
+	my $set='set'.$self->ip_type( $cidr );
 
-	my $valid;
-	eval{
-		 $valid=Net::CIDR::cidrvalidate($cidr);
-	 };
-	if (! defined( $valid ) ){
-		die $cidr.' is not a valid CIDR or IP';
-	}
-
-	$self->{set}->add( $cidr );
+	$self->{$set}->add( $cidr );
 	$self->{list}{$cidr}=1;
 	$self->{init}=1;
 
@@ -183,9 +158,8 @@ sub available{
 	my $invert=$_[2];
 	my $all=$_[3];
 
-	if (!defined( $cidr )){
-		die('No CIDR defined');
-	}
+	# makes sure we have a defined+valid valueand get what set we should remove it from
+	my $set='set'.$self->ip_type( $cidr );
 
 	# set here so we produce nice output if we die
 	if ( !defined( $invert ) ){
@@ -205,12 +179,12 @@ sub available{
 	my $contains=0;
 	if (
 		$all &&
-		$self->{set}->contains_all( $cidr )
+		$self->{$set}->contains_all( $cidr )
 		){
 		$contains=1;
 	}elsif(
 		   ( ! $all ) &&
-		   $self->{set}->contains_any( $cidr )
+		   $self->{$set}->contains_any( $cidr )
 		   ){
 		$contains=1;
 	}
@@ -267,9 +241,8 @@ sub compare_and_add{
 	my $invert=$_[2];
 	my $all=$_[3];
 
-	if (!defined( $cidr )){
-		die('No CIDR defined');
-	}
+	# makes sure we have a defined+valid valueand get what set we should remove it from
+	my $set='set'.$self->ip_type( $cidr );
 
 	# set here so we produce nice output if we die
 	if ( !defined( $invert ) ){
@@ -278,30 +251,23 @@ sub compare_and_add{
 	if ( !defined( $all ) ){
 		$all=0;
 	}
-	my $valid;
-	eval{
-		 $valid=Net::CIDR::cidrvalidate($cidr);
-	 };
-	if (! defined( $valid ) ){
-		die $cidr.' is not a valid CIDR or IP';
-	}
 
-	if ( ! $self->{init} ){
-		$self->{set}->add($cidr);
+	if ( ! $self->{$set.'init'} ){
+		$self->{$set}->add($cidr);
 		$self->{list}{$cidr}=1;
-		$self->{init}=1;
+		$self->{$set.'init'}=1;
 		return 1;
 	}
 
 	my $contains=0;
 	if (
 		$all &&
-		$self->{set}->contains_all( $cidr )
+		$self->{$set}->contains_all( $cidr )
 		){
 		$contains=1;
 	}elsif(
 		   ( ! $all ) &&
-		   $self->{set}->contains_any( $cidr )
+		   $self->{$set}->contains_any( $cidr )
 		   ){
 		$contains=1;
 	}
@@ -314,9 +280,9 @@ sub compare_and_add{
 		die( 'The compare matched... invert='.$invert.' all='.$all );
 	}
 
-	$self->{set}->add($cidr);
+	$self->{$set}->add($cidr);
 	$self->{list}{$cidr}=1;
-	$self->{init}=1;
+	$self->{$set.'init'}=1;
 
 	return 1;
 }
@@ -397,18 +363,59 @@ sub remove{
 	my $self=$_[0];
 	my $cidr=$_[1];
 
-	if (!defined( $cidr )){
-		die('No CIDR defined');
-	}
+	# makes sure we have a defined+valid valueand get what set we should remove it from
+	my $set='set'.$self->ip_type( $cidr );
 
 	if ( !defined( $self->{list}{$cidr} ) ){
 		die( '"'.$cidr.'" is not in the list' );
 	}
 
-	$self->{set}->remove( $cidr );
+	$self->{$set}->remove( $cidr );
 	delete( $self->{list}{$cidr} );
 
 	return 1;
+}
+
+=head2 ip_type
+
+This returns either 4 or 6 based on if it is IPv4 or IPv6.
+
+Upon undef or invalid CIDR, this will die.
+
+    my $type=$nco->ip_type( $cidr );
+    if ( $type eq '4' ){
+        print "It is IPv4\n";
+    }else{
+        print "It is IPv6\n";
+    }
+
+=cut
+
+sub ip_type{
+	my $self=$_[0];
+	my $cidr=$_[1];
+
+	# make sure we have input
+	if (!defined( $cidr )){
+		die('No CIDR defined');
+	}
+
+	# make sure we are valid
+	my $valid;
+	eval{
+		 $valid=Net::CIDR::cidrvalidate($cidr);
+	 };
+	if (! defined( $valid ) ){
+		die $cidr.' is not a valid CIDR or IP';
+	}
+
+	# if it contains a :, then it is IPv6
+	if ( $cidr =~ /\:/ ){
+		return '6';
+	}
+
+	# valid and not IPv6, so IPv4
+	return '4';
 }
 
 =head1 AUTHOR
